@@ -1,0 +1,1245 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Générateur de bâtonnets de semis</title>
+  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Caveat:wght@400&display=swap');
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f5f5f5;
+    }
+
+    #app {
+      display: flex;
+      height: 100vh;
+    }
+
+    .sidebar {
+      width: 350px;
+      background: white;
+      border-right: 1px solid #ddd;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .sidebar-header {
+      padding: 20px;
+      border-bottom: 1px solid #eee;
+    }
+
+    .sidebar-header .header-top {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .sidebar-header .logo {
+      width: 32px;
+      height: 32px;
+    }
+
+    .sidebar-header h1 {
+      font-size: 20px;
+      margin: 0;
+    }
+
+    .sidebar-header p {
+      font-size: 13px;
+      color: #666;
+      margin-bottom: 12px;
+    }
+
+    .grid-selector {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .grid-selector label {
+      font-size: 13px;
+      font-weight: 500;
+      color: #666;
+    }
+
+    .grid-selector select {
+      flex: 1;
+      padding: 6px 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 13px;
+      background: white;
+      cursor: pointer;
+    }
+
+    .font-selector {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .font-selector label {
+      font-size: 13px;
+      font-weight: 500;
+      color: #666;
+    }
+
+    .font-selector select {
+      flex: 1;
+      padding: 6px 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 13px;
+      background: white;
+      cursor: pointer;
+    }
+
+    .font-favorites {
+      margin-top: 8px;
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .font-chip {
+      padding: 4px 10px;
+      background: #e3f2fd;
+      border: 1px solid #2196f3;
+      border-radius: 16px;
+      font-size: 11px;
+      color: #1976d2;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .font-chip:hover {
+      background: #2196f3;
+      color: white;
+    }
+
+    .font-chip.active {
+      background: #2196f3;
+      color: white;
+      font-weight: 500;
+    }
+
+    .wood-background-option {
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid #eee;
+    }
+
+    .wood-background-option label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: #666;
+      cursor: pointer;
+    }
+
+    .wood-background-option input[type="checkbox"] {
+      cursor: pointer;
+    }
+
+    .varieties-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px;
+    }
+
+    .variety-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px;
+      background: #f9f9f9;
+      border-radius: 6px;
+      margin-bottom: 8px;
+    }
+
+    .variety-item label {
+      flex: 1;
+      font-size: 14px;
+    }
+
+    .variety-item input[type="text"] {
+      flex: 1;
+      padding: 6px 8px;
+      border: 1px solid #007bff;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+
+    .variety-item input[type="number"] {
+      width: 70px;
+      padding: 6px 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+
+    .variety-item .edit-btn,
+    .variety-item .save-btn,
+    .variety-item .cancel-btn {
+      padding: 4px 8px;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      font-size: 12px;
+      cursor: pointer;
+      opacity: 0.8;
+      transition: opacity 0.2s;
+    }
+
+    .variety-item .edit-btn {
+      background: #007bff;
+    }
+
+    .variety-item .save-btn {
+      background: #28a745;
+    }
+
+    .variety-item .cancel-btn {
+      background: #6c757d;
+    }
+
+    .variety-item .delete-btn {
+      padding: 4px 8px;
+      background: #dc3545;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      font-size: 12px;
+      cursor: pointer;
+      opacity: 0.8;
+      transition: opacity 0.2s;
+    }
+
+    .variety-item .edit-btn:hover,
+    .variety-item .save-btn:hover,
+    .variety-item .cancel-btn:hover,
+    .variety-item .delete-btn:hover {
+      opacity: 1;
+    }
+
+    .add-variety {
+      padding: 20px;
+      border-top: 1px solid #eee;
+      background: white;
+    }
+
+    .add-variety h3 {
+      font-size: 14px;
+      margin-bottom: 8px;
+      color: #666;
+    }
+
+    .add-variety-form {
+      display: flex;
+      gap: 8px;
+    }
+
+    .add-variety-form input {
+      flex: 1;
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+
+    .add-variety-form button {
+      padding: 8px 16px;
+      background: #28a745;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      font-size: 14px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .add-variety-form button:hover {
+      background: #218838;
+    }
+
+    .sidebar-footer {
+      padding: 20px;
+      border-top: 1px solid #eee;
+      background: white;
+    }
+
+    .stats {
+      font-size: 13px;
+      color: #666;
+      margin-bottom: 12px;
+    }
+
+    .stats strong {
+      color: #333;
+    }
+
+    .btn {
+      width: 100%;
+      padding: 12px;
+      background: #007bff;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.2s;
+      margin-bottom: 8px;
+    }
+
+    .btn:hover {
+      background: #0056b3;
+    }
+
+    .btn:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+
+    .btn.btn-secondary {
+      background: #6c757d;
+    }
+
+    .btn.btn-secondary:hover {
+      background: #5a6268;
+    }
+
+    .btn.btn-success {
+      background: #28a745;
+    }
+
+    .btn.btn-success:hover {
+      background: #218838;
+    }
+
+    .btn.btn-danger {
+      background: #dc3545;
+    }
+
+    .btn.btn-danger:hover {
+      background: #c82333;
+    }
+
+    .config-buttons {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .config-buttons .btn {
+      margin-bottom: 0;
+      font-size: 13px;
+      padding: 10px;
+    }
+
+    .config-buttons-row {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .config-buttons-row .btn {
+      flex: 1;
+      margin-bottom: 0;
+      font-size: 13px;
+      padding: 10px;
+    }
+
+    input[type="file"] {
+      display: none;
+    }
+
+    .main-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .preview-header {
+      padding: 20px;
+      background: white;
+      border-bottom: 1px solid #ddd;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .pagination {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .pagination button {
+      padding: 8px 16px;
+      background: white;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .pagination button:hover:not(:disabled) {
+      background: #f5f5f5;
+    }
+
+    .pagination button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .pagination span {
+      font-size: 14px;
+      color: #666;
+    }
+
+    .preview-container {
+      flex: 1;
+      overflow: auto;
+      padding: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .svg-wrapper {
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      max-width: 90%;
+      max-height: 90%;
+      display: inline-block;
+      line-height: 0;
+    }
+
+    .svg-wrapper svg {
+      display: block;
+      max-width: 100%;
+      max-height: calc(90vh - 120px);
+      height: auto;
+      width: auto;
+    }
+
+    .svg-wrapper.wood-bg {
+      background: linear-gradient(90deg,
+        #f5e6d3 0%,
+        #f0ddc5 10%,
+        #ead4b8 20%,
+        #f2ddc8 30%,
+        #ecdac0 40%,
+        #f5e6d3 50%,
+        #f0ddc5 60%,
+        #ead4b8 70%,
+        #f2ddc8 80%,
+        #ecdac0 90%,
+        #f5e6d3 100%
+      );
+      background-size: 200px 100%;
+      position: relative;
+    }
+
+    .svg-wrapper.wood-bg::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background:
+        repeating-linear-gradient(
+          0deg,
+          transparent,
+          transparent 2px,
+          rgba(139, 90, 43, 0.03) 2px,
+          rgba(139, 90, 43, 0.03) 4px
+        ),
+        repeating-linear-gradient(
+          90deg,
+          transparent,
+          transparent 40px,
+          rgba(139, 90, 43, 0.05) 40px,
+          rgba(139, 90, 43, 0.05) 42px
+        );
+      pointer-events: none;
+      border-radius: 8px;
+    }
+
+    .empty-state {
+      text-align: center;
+      color: #999;
+    }
+
+    .empty-state h2 {
+      font-size: 18px;
+      margin-bottom: 8px;
+    }
+
+    .empty-state p {
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <div class="sidebar">
+      <div class="sidebar-header">
+        <div class="header-top">
+          <svg class="logo" viewBox="2.527 91.736 9.082 13.431">
+            <path fill="#2E5930" d="M 154.762 55.478 L 154.5 91.957 C 146.92164 75.637725 139.34262 59.318692 131.763 43 C 120.84906 43.228129 109.82212 42.371977 99 43.848 C 106.12894 60.266884 114.12867 76.297934 121.739 92.5 C 143.82598 92.675148 165.91303 92.850815 188 93.027 L 188 19 L 155.025 19 L 154.762 55.478 z M 209.037 49.25 C 202.44227 63.766298 195.4758 78.113336 189 92.683 C 200.13157 93.137669 211.28435 92.58384 222.424 92.5 C 229.98623 76.43998 238.08577 60.611168 244.972 44.25 C 239.16774 42.091306 232.22266 43.362368 225.937 43 L 211.875 43 L 209.037 49.25 z M 79.065 114.25 C 74.206289 125.7384 68.095641 136.75163 64.215 148.62 C 98.696136 210.81071 133.919 272.59655 169.25297 334.30852 C 173.13098 345.21829 176.89572 327.74081 180.59187 324.26581 C 213.83237 265.89596 247.12626 207.55146 279.823 148.876 C 274.74348 135.81529 269.17345 122.80286 262.31918 110.56784 C 259.99022 109.23152 256.30154 110.38626 253.454 110 L 80.929 110 L 79.065 114.25 z M 152.254 164 C 158.87204 175.3993 165.50813 186.78816 172.163 198.166 L 201.175 148 L 240.198 148 C 217.60769 186.54926 195.56477 225.42412 172.576 263.737 C 166.23261 256.88685 162.2205 247.93518 157.12201 240.05502 C 139.28714 209.75658 121.65054 179.34013 104.16 148.842 C 117.10888 147.47497 130.22948 148.56559 143.253 148.5 L 152.254 164 z" fill-rule="nonzero" transform="matrix(0.0421228,0,0,0.0421228,-0.178155,90.93528)"/>
+          </svg>
+          <h1>Bâtonnets de semis</h1>
+        </div>
+        <p>Sélectionnez les variétés et quantités</p>
+        <div class="grid-selector">
+          <label>Format :</label>
+          <select v-model="selectedGrid" @change="onGridChange">
+            <option value="grille3">Bout rond (54 bâtonnets)</option>
+            <option value="grille4">Bout droit (68 bâtonnets)</option>
+          </select>
+        </div>
+
+        <div class="font-selector">
+          <label>Police :</label>
+          <select v-model="selectedFont">
+            <option value="Caveat:400">Caveat (Regular)</option>
+            <option value="Alegreya+Sans:500">Alegreya Sans Medium</option>
+            <option value="Alegreya+Sans:600">Alegreya Sans SemiBold</option>
+            <option value="Bree+Serif:400">Bree Serif Regular</option>
+            <option value="Bree+Serif:500">Bree Serif Medium</option>
+            <option value="Roboto+Slab:500">Roboto Slab Medium</option>
+          </select>
+        </div>
+
+        <div class="font-favorites">
+          <span
+            class="font-chip"
+            :class="{ active: selectedFont === 'Alegreya+Sans:500' }"
+            @click="selectedFont = 'Alegreya+Sans:500'">
+            Alegreya Sans Medium
+          </span>
+          <span
+            class="font-chip"
+            :class="{ active: selectedFont === 'Alegreya+Sans:600' }"
+            @click="selectedFont = 'Alegreya+Sans:600'">
+            Alegreya Sans SemiBold
+          </span>
+          <span
+            class="font-chip"
+            :class="{ active: selectedFont === 'Bree+Serif:400' }"
+            @click="selectedFont = 'Bree+Serif:400'">
+            Bree Serif Regular
+          </span>
+          <span
+            class="font-chip"
+            :class="{ active: selectedFont === 'Bree+Serif:500' }"
+            @click="selectedFont = 'Bree+Serif:500'">
+            Bree Serif Medium
+          </span>
+          <span
+            class="font-chip"
+            :class="{ active: selectedFont === 'Roboto+Slab:500' }"
+            @click="selectedFont = 'Roboto+Slab:500'">
+            Roboto Slab Medium
+          </span>
+        </div>
+
+        <div class="wood-background-option">
+          <label>
+            <input type="checkbox" v-model="woodBackground">
+            Fond bois (plywood bouleau)
+          </label>
+        </div>
+      </div>
+
+      <div class="varieties-list">
+        <div v-for="variety in varieties" :key="variety" class="variety-item">
+          <label v-if="editingVariety !== variety">{{ variety }}</label>
+          <input
+            v-else
+            type="text"
+            v-model="editedVarietyName"
+            @keyup.enter="saveVarietyEdit(variety)"
+            @keyup.esc="cancelEdit"
+            ref="editInput"
+          >
+          <input
+            type="number"
+            min="0"
+            :value="quantities[variety] || 0"
+            @input="updateQuantity(variety, $event.target.value)"
+          >
+          <button
+            v-if="editingVariety !== variety"
+            class="edit-btn"
+            @click="startEdit(variety)"
+            title="Modifier le nom"
+          >
+            ✎
+          </button>
+          <button
+            v-if="editingVariety === variety"
+            class="save-btn"
+            @click="saveVarietyEdit(variety)"
+            title="Enregistrer"
+          >
+            ✓
+          </button>
+          <button
+            v-if="editingVariety === variety"
+            class="cancel-btn"
+            @click="cancelEdit"
+            title="Annuler"
+          >
+            ✕
+          </button>
+          <button
+            v-if="customVarieties.includes(variety) && editingVariety !== variety"
+            class="delete-btn"
+            @click="removeVariety(variety)"
+            title="Supprimer cette variété"
+          >
+            🗑
+          </button>
+        </div>
+      </div>
+
+      <div class="add-variety">
+        <h3>Ajouter une variété</h3>
+        <form class="add-variety-form" @submit.prevent="addVariety">
+          <input
+            v-model="newVarietyName"
+            type="text"
+            placeholder="Nom de la variété..."
+            required
+          >
+          <button type="submit">Ajouter</button>
+        </form>
+      </div>
+
+      <div class="sidebar-footer">
+        <div class="stats">
+          <div><strong>{{ totalSticks }}</strong> bâtonnets</div>
+          <div><strong>{{ totalPages }}</strong> page(s)</div>
+        </div>
+        <button class="btn" @click="exportAll" :disabled="totalPages === 0">
+          Télécharger tous les SVG
+        </button>
+        <div class="config-buttons-row">
+          <button class="btn btn-secondary" @click="exportConfig">
+            📥 Exporter
+          </button>
+          <button class="btn btn-success" @click="triggerImportConfig">
+            📤 Importer
+          </button>
+          <button class="btn btn-danger" @click="resetConfig">
+            🔄 Reset
+          </button>
+        </div>
+        <input
+          type="file"
+          ref="configFileInput"
+          accept=".json"
+          @change="importConfig"
+        >
+      </div>
+    </div>
+
+    <div class="main-content">
+      <div class="preview-header">
+        <h2>Prévisualisation</h2>
+        <div class="pagination" v-if="totalPages > 0">
+          <button @click="prevPage" :disabled="currentPage === 1">◀ Précédent</button>
+          <span>Page {{ currentPage }} / {{ totalPages }}</span>
+          <button @click="nextPage" :disabled="currentPage === totalPages">Suivant ▶</button>
+          <button @click="exportCurrent">Télécharger cette page</button>
+        </div>
+      </div>
+
+      <div class="preview-container">
+        <div v-if="totalPages === 0" class="empty-state">
+          <h2>Aucun bâtonnet sélectionné</h2>
+          <p>Sélectionnez des variétés et indiquez les quantités</p>
+        </div>
+        <div v-else class="svg-wrapper" :class="{ 'wood-bg': woodBackground }" v-html="currentPageSVG"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const { createApp } = Vue;
+
+    createApp({
+      data() {
+        return {
+          varieties: [],
+          customVarieties: [],
+          quantities: {},
+          newVarietyName: '',
+          editingVariety: null,
+          editedVarietyName: '',
+          currentPage: 1,
+          selectedGrid: 'grille3',
+          selectedFont: 'Caveat:400',
+          woodBackground: false,
+          svgTemplates: {
+            grille3: null,
+            grille4: null
+          },
+          gridConfigs: {
+            grille3: {
+              sticksPerPage: 54,
+              sections: [
+                { count: 23, type: 'upper' },
+                { count: 22, type: 'lower' },
+                { count: 9, type: 'horizontal' }
+              ]
+            },
+            grille4: {
+              sticksPerPage: 68,
+              sections: [
+                { count: 23, type: 'row1' },
+                { count: 22, type: 'row2' },
+                { count: 23, type: 'row3' }
+              ]
+            }
+          }
+        };
+      },
+
+      computed: {
+        sticksPerPage() {
+          return this.gridConfigs[this.selectedGrid].sticksPerPage;
+        },
+
+        gridDisplayName() {
+          return this.selectedGrid === 'grille3' ? 'bout-rond' : 'bout-droit';
+        },
+
+        fontFamily() {
+          const [family] = this.selectedFont.split(':');
+          return family.replace(/\+/g, ' ');
+        },
+
+        fontWeight() {
+          const [, weight] = this.selectedFont.split(':');
+          return weight || '400';
+        },
+
+        fontUrl() {
+          return `https://fonts.googleapis.com/css2?family=${this.selectedFont.split(':')[0]}:wght@${this.fontWeight}&display=swap`;
+        },
+
+        totalSticks() {
+          return Object.values(this.quantities).reduce((sum, qty) => sum + (parseInt(qty) || 0), 0);
+        },
+
+        totalPages() {
+          return Math.ceil(this.totalSticks / this.sticksPerPage);
+        },
+
+        allSticks() {
+          const sticks = [];
+          for (const [variety, quantity] of Object.entries(this.quantities)) {
+            if (quantity > 0) {
+              for (let i = 0; i < quantity; i++) {
+                sticks.push(variety);
+              }
+            }
+          }
+          return sticks;
+        },
+
+        currentPageSVG() {
+          const startIdx = (this.currentPage - 1) * this.sticksPerPage;
+          const endIdx = startIdx + this.sticksPerPage;
+          const pageSticks = this.allSticks.slice(startIdx, endIdx);
+          return this.generateSVG(pageSticks);
+        }
+      },
+
+      methods: {
+        async loadSVGTemplates() {
+          try {
+            // Load both SVG templates
+            const [grille3Response, grille4Response] = await Promise.all([
+              fetch('grille3.svg'),
+              fetch('grille4.svg')
+            ]);
+
+            this.svgTemplates.grille3 = await grille3Response.text();
+            this.svgTemplates.grille4 = await grille4Response.text();
+
+            console.log('SVG templates loaded successfully');
+          } catch (error) {
+            console.error('Error loading SVG templates:', error);
+          }
+        },
+
+        async loadVarieties() {
+          try {
+            const response = await fetch('varietes.json');
+            const data = await response.json();
+            this.varieties = data.names;
+
+            // Initialize quantities
+            this.varieties.forEach(variety => {
+              this.quantities[variety] = 0;
+            });
+          } catch (error) {
+            console.error('Error loading varieties:', error);
+          }
+        },
+
+        updateQuantity(variety, value) {
+          const qty = parseInt(value) || 0;
+          this.quantities[variety] = qty;
+        },
+
+        addVariety() {
+          const name = this.newVarietyName.trim();
+          if (!name) return;
+
+          // Check if variety already exists
+          if (this.varieties.includes(name)) {
+            alert('Cette variété existe déjà !');
+            return;
+          }
+
+          // Add to varieties and custom varieties
+          this.varieties.push(name);
+          this.customVarieties.push(name);
+          this.quantities[name] = 1;
+          this.newVarietyName = '';
+        },
+
+        removeVariety(variety) {
+          // Remove from varieties
+          const index = this.varieties.indexOf(variety);
+          if (index > -1) {
+            this.varieties.splice(index, 1);
+          }
+
+          // Remove from custom varieties
+          const customIndex = this.customVarieties.indexOf(variety);
+          if (customIndex > -1) {
+            this.customVarieties.splice(customIndex, 1);
+          }
+
+          // Remove quantity
+          delete this.quantities[variety];
+        },
+
+        startEdit(variety) {
+          this.editingVariety = variety;
+          this.editedVarietyName = variety;
+          // Focus the input in the next tick
+          this.$nextTick(() => {
+            const inputs = document.querySelectorAll('input[type="text"]');
+            if (inputs.length > 0) {
+              inputs[inputs.length - 1].focus();
+              inputs[inputs.length - 1].select();
+            }
+          });
+        },
+
+        saveVarietyEdit(oldVariety) {
+          const newName = this.editedVarietyName.trim();
+
+          if (!newName) {
+            alert('Le nom ne peut pas être vide !');
+            return;
+          }
+
+          if (newName === oldVariety) {
+            this.cancelEdit();
+            return;
+          }
+
+          // Check if new name already exists
+          if (this.varieties.includes(newName)) {
+            alert('Cette variété existe déjà !');
+            return;
+          }
+
+          // Update variety name
+          const index = this.varieties.indexOf(oldVariety);
+          if (index > -1) {
+            this.varieties[index] = newName;
+          }
+
+          // Update custom varieties if applicable
+          const customIndex = this.customVarieties.indexOf(oldVariety);
+          if (customIndex > -1) {
+            this.customVarieties[customIndex] = newName;
+          }
+
+          // Update quantities
+          this.quantities[newName] = this.quantities[oldVariety];
+          delete this.quantities[oldVariety];
+
+          this.cancelEdit();
+        },
+
+        cancelEdit() {
+          this.editingVariety = null;
+          this.editedVarietyName = '';
+        },
+
+        onGridChange() {
+          // Reset to page 1 when changing grid
+          this.currentPage = 1;
+        },
+
+        generateSVG(sticks) {
+          if (!this.svgTemplates[this.selectedGrid]) {
+            return '<svg></svg>'; // Template not loaded yet
+          }
+
+          if (this.selectedGrid === 'grille4') {
+            return this.generateSVGGrille4(sticks);
+          }
+          return this.generateSVGGrille3(sticks);
+        },
+
+        generateSVGGrille3(sticks) {
+          let template = this.svgTemplates.grille3;
+
+          // Replace font import in template
+          template = template.replace(
+            /@import url\([^)]+\)/,
+            `@import url('${this.fontUrl}')`
+          );
+
+          // Generate texts only
+          // Upper vertical texts (23)
+          const upperTexts = sticks.slice(0, 23);
+          const upperTextElements = upperTexts.map((text, i) => {
+            const x = 8.5 + (i * 13);
+            const fontSize = this.calculateFontSize(text, 80, 8);
+            return `    <text transform="translate(${x},8) rotate(-90)" font-size="${fontSize}">${this.escapeHtml(text)}</text>`;
+          }).join('\n');
+
+          // Lower vertical texts (22)
+          const lowerTexts = sticks.slice(23, 45);
+          const lowerTextElements = lowerTexts.map((text, i) => {
+            const x = 12 + (i * 13);
+            const fontSize = this.calculateFontSize(text, 80, 8);
+            return `    <text transform="translate(${x},208) rotate(90)" font-size="${fontSize}">${this.escapeHtml(text)}</text>`;
+          }).join('\n');
+
+          // Horizontal texts (9 total: 5 left + 4 right)
+          const horizontalTexts = sticks.slice(45, 54);
+          const leftTexts = horizontalTexts.slice(0, 5);
+          const rightTexts = horizontalTexts.slice(5, 9);
+
+          // Left texts: rotated 180°
+          const leftTextElements = leftTexts.map((text, i) => {
+            const y = 230.5 + (i * 13);
+            const centerY = 228.5 + (i * 13);
+            const centerX = 94.5;
+            const fontSize = this.calculateFontSize(text, 80, 8);
+            return `    <text x="139" y="${y}" transform="rotate(180,${centerX},${centerY})" font-size="${fontSize}">${this.escapeHtml(text)}</text>`;
+          }).join('\n');
+
+          // Right texts: aligned right (text-anchor="end")
+          const rightTextElements = rightTexts.map((text, i) => {
+            const y = 237 + (i * 13);
+            const fontSize = this.calculateFontSize(text, 80, 8);
+            return `    <text x="249" y="${y}" font-size="${fontSize}">${this.escapeHtml(text)}</text>`;
+          }).join('\n');
+
+          // Create text groups
+          const textsSVG = `
+  <!-- ============================================================ -->
+  <!-- TEXTS (Generated) -->
+  <!-- ============================================================ -->
+
+  <!-- === UPPER VERTICAL TEXTS === -->
+  <g font-family="'${this.fontFamily}', sans-serif" font-weight="${this.fontWeight}" font-size="8" fill="#003366" text-anchor="end">
+${upperTextElements}
+  </g>
+
+  <!-- === LOWER VERTICAL TEXTS === -->
+  <g font-family="'${this.fontFamily}', sans-serif" font-weight="${this.fontWeight}" font-size="8" fill="#003366" text-anchor="end">
+${lowerTextElements}
+  </g>
+
+  <!-- === HORIZONTAL TEXTS (bottom section) === -->
+  <!-- Left texts: flipped 180° -->
+  <g font-family="'${this.fontFamily}', sans-serif" font-weight="${this.fontWeight}" font-size="8" fill="#003366" text-anchor="end">
+${leftTextElements}
+  </g>
+
+  <!-- Right texts: aligned right -->
+  <g font-family="'${this.fontFamily}', sans-serif" font-weight="${this.fontWeight}" font-size="8" fill="#003366" text-anchor="end">
+${rightTextElements}
+  </g>
+`;
+
+          // Inject texts before closing </svg> tag
+          return template.replace('</svg>', textsSVG + '\n</svg>');
+        },
+
+        generateSVGGrille4(sticks) {
+          let template = this.svgTemplates.grille4;
+
+          // Replace font import in template
+          template = template.replace(
+            /@import url\([^)]+\)/,
+            `@import url('${this.fontUrl}')`
+          );
+
+          // Generate texts only
+          // Row 1: 23 texts
+          const row1Texts = sticks.slice(0, 23);
+          const row1TextElements = row1Texts.map((text, i) => {
+            const x = 8.5 + (i * 13);
+            const fontSize = this.calculateFontSize(text, 80, 7);
+            return `    <text transform="translate(${x},10) rotate(-90)" font-size="${fontSize}">${this.escapeHtml(text)}</text>`;
+          }).join('\n');
+
+          // Row 2: 22 texts
+          const row2Texts = sticks.slice(23, 45);
+          const row2TextElements = row2Texts.map((text, i) => {
+            const x = 12 + (i * 13);
+            const fontSize = this.calculateFontSize(text, 80, 7);
+            return `    <text transform="translate(${x},192) rotate(90)" font-size="${fontSize}">${this.escapeHtml(text)}</text>`;
+          }).join('\n');
+
+          // Row 3: 23 texts
+          const row3Texts = sticks.slice(45, 68);
+          const row3TextElements = row3Texts.map((text, i) => {
+            const x = 5.5 + (i * 13);
+            const fontSize = this.calculateFontSize(text, 80, 7);
+            return `    <text transform="translate(${x},296.5) rotate(90)" font-size="${fontSize}">${this.escapeHtml(text)}</text>`;
+          }).join('\n');
+
+          // Create text groups
+          const textsSVG = `
+  <!-- ============================================================ -->
+  <!-- TEXTS (Generated) -->
+  <!-- ============================================================ -->
+
+  <g font-family="'${this.fontFamily}', sans-serif" font-weight="${this.fontWeight}" font-size="7" fill="#003366" text-anchor="end">
+${row1TextElements}
+  </g>
+
+  <g font-family="'${this.fontFamily}', sans-serif" font-weight="${this.fontWeight}" font-size="7" fill="#003366" text-anchor="end">
+${row2TextElements}
+  </g>
+
+  <g font-family="'${this.fontFamily}', sans-serif" font-weight="${this.fontWeight}" font-size="7" fill="#003366" text-anchor="end">
+${row3TextElements}
+  </g>
+`;
+
+          // Inject texts before closing </svg> tag
+          return template.replace('</svg>', textsSVG + '\n</svg>');
+        },
+
+        escapeHtml(text) {
+          const div = document.createElement('div');
+          div.textContent = text;
+          return div.innerHTML;
+        },
+
+        calculateFontSize(text, maxLength, maxSize, minSize = 5) {
+          // Estimate text width: chars * fontSize * avgCharWidth
+          // avgCharWidth varies by font, using 0.6 as average
+          const avgCharWidth = 0.6;
+          const padding = 4; // 2mm on each side
+          const availableLength = maxLength - padding;
+
+          // Calculate optimal font size
+          const estimatedWidth = text.length * maxSize * avgCharWidth;
+
+          if (estimatedWidth <= availableLength) {
+            return maxSize;
+          }
+
+          // Calculate required font size
+          const requiredSize = (availableLength / (text.length * avgCharWidth));
+          return Math.max(minSize, Math.min(maxSize, requiredSize));
+        },
+
+        downloadSVG(svg, filename) {
+          const blob = new Blob([svg], { type: 'image/svg+xml' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = filename;
+          a.click();
+          URL.revokeObjectURL(url);
+        },
+
+        exportCurrent() {
+          this.downloadSVG(this.currentPageSVG, `batonets-${this.gridDisplayName}-page-${this.currentPage}.svg`);
+        },
+
+        exportAll() {
+          for (let i = 1; i <= this.totalPages; i++) {
+            const startIdx = (i - 1) * this.sticksPerPage;
+            const endIdx = startIdx + this.sticksPerPage;
+            const pageSticks = this.allSticks.slice(startIdx, endIdx);
+            const svg = this.generateSVG(pageSticks);
+
+            // Small delay between downloads to avoid browser blocking
+            setTimeout(() => {
+              this.downloadSVG(svg, `batonets-${this.gridDisplayName}-page-${i}.svg`);
+            }, i * 100);
+          }
+        },
+
+        prevPage() {
+          if (this.currentPage > 1) {
+            this.currentPage--;
+          }
+        },
+
+        nextPage() {
+          if (this.currentPage < this.totalPages) {
+            this.currentPage++;
+          }
+        },
+
+        exportConfig() {
+          const config = {
+            version: '1.0',
+            selectedGrid: this.selectedGrid,
+            customVarieties: this.customVarieties,
+            quantities: this.quantities,
+            exportDate: new Date().toISOString()
+          };
+
+          const json = JSON.stringify(config, null, 2);
+          const blob = new Blob([json], { type: 'application/json' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `batonets-config-${new Date().toISOString().split('T')[0]}.json`;
+          a.click();
+          URL.revokeObjectURL(url);
+        },
+
+        triggerImportConfig() {
+          this.$refs.configFileInput.click();
+        },
+
+        async importConfig(event) {
+          const file = event.target.files[0];
+          if (!file) return;
+
+          try {
+            const text = await file.text();
+            const config = JSON.parse(text);
+
+            // Validate config
+            if (!config.version || !config.selectedGrid || !config.quantities) {
+              alert('Fichier de configuration invalide !');
+              return;
+            }
+
+            // Apply configuration
+            this.selectedGrid = config.selectedGrid;
+            this.customVarieties = config.customVarieties || [];
+
+            // Merge custom varieties with base varieties
+            const baseVarieties = await this.loadBaseVarieties();
+            const allVarieties = [...baseVarieties];
+
+            // Add custom varieties that aren't in base
+            for (const customVar of this.customVarieties) {
+              if (!allVarieties.includes(customVar)) {
+                allVarieties.push(customVar);
+              }
+            }
+
+            this.varieties = allVarieties;
+            this.quantities = config.quantities;
+            this.currentPage = 1;
+
+            // Reset file input
+            event.target.value = '';
+
+            alert('Configuration importée avec succès !');
+          } catch (error) {
+            console.error('Error importing config:', error);
+            alert('Erreur lors de l\'import de la configuration !');
+          }
+        },
+
+        async loadBaseVarieties() {
+          try {
+            const response = await fetch('varietes.json');
+            const data = await response.json();
+            return data.names;
+          } catch (error) {
+            console.error('Error loading base varieties:', error);
+            return [];
+          }
+        },
+
+        async resetConfig() {
+          if (!confirm('Êtes-vous sûr de vouloir réinitialiser toute la configuration ?')) {
+            return;
+          }
+
+          // Reset to base varieties only
+          const baseVarieties = await this.loadBaseVarieties();
+          this.varieties = baseVarieties;
+          this.customVarieties = [];
+
+          // Reset all quantities to 0
+          this.quantities = {};
+          baseVarieties.forEach(variety => {
+            this.quantities[variety] = 0;
+          });
+
+          // Reset grid to default
+          this.selectedGrid = 'grille3';
+
+          // Reset page
+          this.currentPage = 1;
+
+          // Clear any editing state
+          this.editingVariety = null;
+          this.editedVarietyName = '';
+          this.newVarietyName = '';
+        }
+      },
+
+      watch: {
+        totalPages(newVal, oldVal) {
+          if (newVal < this.currentPage) {
+            this.currentPage = Math.max(1, newVal);
+          }
+        }
+      },
+
+      async mounted() {
+        await this.loadSVGTemplates();
+        await this.loadVarieties();
+      }
+    }).mount('#app');
+  </script>
+</body>
+</html>
